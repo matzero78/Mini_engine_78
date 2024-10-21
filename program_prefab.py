@@ -1,11 +1,12 @@
 
 
-
+import math
 import pygame
 import random
 import os
 import tkinter
-from funciones_de_calculo import *
+import requests
+import io
 
 
 
@@ -32,9 +33,18 @@ pygame.display.set_icon(pygame.Surface((32,32)))
 
 
 
+def load_image_by_url(url,resize_bool=False,scale=1):
+    r_sprite = requests.get(url)
+    img_sprite = io.BytesIO(r_sprite.content)
+    sprite_load = pygame.image.load(img_sprite)
+    if resize_bool == False:
+        return sprite_load
+    if resize_bool == True:
+        size = [sprite_load.get_width()*scale,sprite_load.get_height()*scale]
+        resize_load = pygame.transform.scale(sprite_load,size)
+        return resize_load
 
-
-def return_spritesheet(img,rect,cantidad_frame,hori_vert_bool,list_bool_flip,scale):
+def return_spritesheet(img,rect,cantidad_frame=10,hori_vert_bool=[True,False],list_bool_flip=[False,False],scale=2):
     listi = []
     
     num = 0
@@ -282,6 +292,123 @@ def create_button(screen,dict,bool_active):
     string_blit(dict['string'],dict['pos'],dict['string_scale'],dict['string_color'],screen)
 
     
+"""def"""
+def antihover(ancho,alto,pos,surface_pos):
+    if surface_pos[0] < pos[0] or surface_pos[0] > pos[0] + ancho or surface_pos[1] < pos[1] or surface_pos[1] > pos[1] + alto:
+        return True
+    else:
+        return False
+def hover(self,surf_pos,pos,scale):
+    if surf_pos[0] > pos[0] and surf_pos[0] < pos[0] + scale[0] and surf_pos[1] > pos[1] and surf_pos[1] < pos[1] + scale[1]:
+        return True
+    else:
+        return False
+def Hover(surf_pos,rect):
+            if surf_pos[0] > rect[0] and surf_pos[0] < rect[0] + rect[2] and surf_pos[1] > rect[1] and surf_pos[1] < rect[1] + rect[3]:
+                return True
+            else:
+                return False
+def Hit_box(rect,rect2,distance):
+    point_up = [rect[0] + rect[2]/2,rect[1] - distance]
+    point_down = [rect[0] + rect[2]/2,rect[1] + rect[3] + distance]
+    point_left = [rect[0] - distance,rect[1] + rect[3]/2]
+    point_right = [rect[0] + rect[2] + distance,rect[1] + rect[3]/2]
+    lista_cols = [Hover(point_up,rect2),Hover(point_down,rect2),Hover(point_left,rect2),Hover(point_right,rect2)]
+    return lista_cols
+def Color_box(rect,surf_color,distance,screen_rect):
+    point_up = [round(rect[0] + rect[2]/2),round(rect[1] - distance)]
+    point_down = [round(rect[0] + rect[2]/2),round(rect[1] + rect[3] + distance)]
+    point_left = [round(rect[0] - distance),round(rect[1] + rect[3]/2)]
+    point_right = [round(rect[0] + rect[2] + distance),round(rect[1] + rect[3]/2)]
+    if Hover(point_up,screen_rect) == True and Hover(point_down,screen_rect) == True and Hover(point_left,screen_rect) == True and Hover(point_right,screen_rect) == True:
+        lista_cols = [surf_color.get_at(point_up),surf_color.get_at((point_down)),surf_color.get_at((point_left)),surf_color.get_at((point_right))]
+        return lista_cols
+    else:
+        return [1,0,0,1]
+def num_follow(num,num_follow,vel):
+            if num < num_follow:
+                num = num + vel
+
+            if num > num_follow:
+                num = num - vel
+            return num
+def clock(num,num_follow,vel):
+            if num < num_follow:
+                num = num + vel
+
+            if num >= num_follow:
+                num = 0
+            return num
+
+def distancia_plana_simple(pos1,pos2):
+
+
+    d = math.sqrt((pos1[0] - pos2[0])*2 + (pos1[1] - pos2[1])*2)
+    return d
+
+
+def avistamiento(self, a, b, distancia):
+    if (math.sqrt(((b[0] - a[0]) ** 2) + ((b[1] - a[1]) ** 2))) < distancia:
+        return True
+    else:
+        return False
+def anti_avistamiento(self,a, b, distancia):
+    if (math.sqrt(((b[0] - a[0]) ** 2) + ((b[1] - a[1]) ** 2))) > distancia:
+        return True
+    else:
+        return False
+
+#otros
+def indice_punto_mas_cercano(punto_referencia, lista_puntos):
+    indice = min(range(len(lista_puntos)), key=lambda i: (lista_puntos[i][0] - punto_referencia[0])**2 + (lista_puntos[i][1] - punto_referencia[1])**2)
+    return indice
+
+def indice_numero_mas_cercano(lista, numero):
+    indice_mas_cercano = 0
+    diferencia_minima = abs(numero - lista[0])
+
+    for i in range(1, len(lista)):
+        diferencia_actual = abs(numero - lista[i])
+        if diferencia_actual < diferencia_minima:
+            diferencia_minima = diferencia_actual
+            indice_mas_cercano = i
+
+    return indice_mas_cercano
+
+def encontrar_maximo_de_elementos(lista):
+    num = 0
+    for dia in lista:
+        num += 1
+    return num
+def angle(pos_per,pos_enem):
+    x_dist = pos_enem[0] - pos_per[0]
+    y_dist = -(pos_enem[1] - pos_per[1])  # -ve because pygame y coordinates increase down the screen
+    angle = math.degrees(math.atan2(y_dist, x_dist))
+    return angle
+
+def contiene_falso(lista):
+  """
+  Esta función verifica si una lista contiene al menos un elemento False.
+
+  Argumentos:
+    lista: La lista que se quiere verificar.
+
+  Devuelve:
+    True si la lista contiene al menos un elemento False, False en caso contrario.
+  """
+  return any(elemento == False for elemento in lista)
+
+def encontrar_ancho_objeto(pantalla, superficie_objeto, color_objeto, color_fondo):
+  ancho_objeto = superficie_objeto.get_width()
+  alto_objeto = superficie_objeto.get_height()
+  x = 0
+  for y in range(alto_objeto):
+    for x_aux in range(ancho_objeto):
+      color_pixel = pantalla.get_at((x + x_aux, y))
+      if color_pixel != color_fondo and color_pixel != color_objeto:
+        return x_aux
+    x += 1
+  return 0
 
 
 
